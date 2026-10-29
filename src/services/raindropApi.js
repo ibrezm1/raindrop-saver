@@ -46,9 +46,16 @@ export async function fetchBookmarks({ query = '', page = 0, perPage = 10, token
     throw new Error('Please set your Raindrop API token in settings first.');
   }
 
+  // Always exclude the 'xxx' tag from queries
+  const trimmed = (query || '').trim();
+  let fullSearch = trimmed;
+  if (!fullSearch.includes('-#xxx')) {
+    fullSearch = fullSearch ? `${fullSearch} -#xxx` : '-#xxx';
+  }
+
   let url = `${API_BASE}/raindrops/0?perpage=${perPage}&page=${page}&sort=-created`;
-  if (query && query.trim()) {
-    url += `&search=${encodeURIComponent(query.trim())}`;
+  if (fullSearch) {
+    url += `&search=${encodeURIComponent(fullSearch)}`;
   }
 
   const response = await fetch(url, {

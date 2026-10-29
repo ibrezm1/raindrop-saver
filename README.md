@@ -58,13 +58,13 @@ npm run preview
 ### 1. Save Current Page Bookmarklet
 
 ```javascript
-javascript:(function(){const u=encodeURIComponent(location.href);const t=encodeURIComponent(document.title);const token='bdf203da-f9c1-4e63-b75e-5cc1004b6444';window.open('https://ibrezm1.github.io/raindrop-saver/?url='+u+'&title='+t+'&token='+token,'_blank');})();
+javascript:(function(){const u=encodeURIComponent(location.href);const t=encodeURIComponent(document.title);const token='*********';window.open('https://ibrezm1.github.io/raindrop-saver/?url='+u+'&title='+t+'&token='+token,'_blank');})();
 ```
 
 ### 2. Save Clipboard Link Bookmarklet
 
 ```javascript
-javascript:(async function(){try{const c=(await navigator.clipboard.readText()||'').trim();const token='bdf203da-f9c1-4e63-b75e-5cc1004b6444';if(/^https?:\/\//i.test(c)){window.open('https://ibrezm1.github.io/raindrop-saver/?url='+encodeURIComponent(c)+'&title='+encodeURIComponent(c)+'&token='+token,'_blank');}else{window.open('https://ibrezm1.github.io/raindrop-saver/?clipboard=1&token='+token,'_blank');}}catch(e){window.open('https://ibrezm1.github.io/raindrop-saver/?clipboard=1&token=bdf203da-f9c1-4e63-b75e-5cc1004b6444','_blank');}})();
+javascript:(async function(){try{const c=(await navigator.clipboard.readText()||'').trim();const token='*********';if(/^https?:\/\//i.test(c)){window.open('https://ibrezm1.github.io/raindrop-saver/?url='+encodeURIComponent(c)+'&title='+encodeURIComponent(c)+'&token='+token,'_blank');}else{window.open('https://ibrezm1.github.io/raindrop-saver/?clipboard=1&token='+token,'_blank');}}catch(e){window.open('https://ibrezm1.github.io/raindrop-saver/?clipboard=1&token=**************','_blank');}})();
 ```
 
 ---
