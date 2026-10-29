@@ -159,14 +159,6 @@
             flex-wrap: wrap;
             gap: 8px;
         }
-        .tag {
-            font-size: 11px;
-            padding: 2px 7px;
-            border-radius: 10px;
-            background: #1f6feb22;
-            color: #58a6ff;
-            border: 1px solid #1f6feb55;
-        }
         .token-status {
             font-size: 12px;
             color: #8b949e;
@@ -175,16 +167,18 @@
         .token-status.saved {
             color: #3fb950;
         }
+        .token-status.missing {
+            color: #f0883e;
+        }
         .tip {
             font-size: 12px;
             color: #8b949e;
             margin-top: 6px;
             line-height: 1.4;
         }
-        #clipboardActionPrompt {
+        #clipboardActionPrompt, #tokenPromptSection {
             display: none;
             margin-top: 16px;
-            text-align: center;
         }
     </style>
 </head>
@@ -195,10 +189,25 @@
         <h2 id="titleText">Saving bookmark...</h2>
         <p class="sub" id="subText">Connecting to Raindrop.io</p>
 
+        <!-- First-time token setup prompt if no token is in localStorage -->
+        <div id="tokenPromptSection" style="text-align: left;">
+            <p style="font-size: 14px; margin-bottom: 10px; color: #f0f6fc;">
+                🔑 <strong>Raindrop API Token Required</strong><br>
+                <span style="font-size: 13px; color: #8b949e;">Enter your token once. It will be captured and saved in this browser's LocalStorage.</span>
+            </p>
+            <div class="input-group">
+                <input type="password" id="firstTimeTokenInput" placeholder="Paste Raindrop API Token" autocomplete="off" />
+                <button class="btn btn-green" id="btnSubmitFirstTimeToken">Save &amp; Continue</button>
+            </div>
+            <p class="tip">
+                Get your token from <a href="https://app.raindrop.io/settings/integrations" target="_blank" style="color: #58a6ff; text-decoration: none;">Raindrop &gt; Settings &gt; Integrations</a>
+            </p>
+        </div>
+
         <!-- Prompt when clipboard access requires click gesture -->
-        <div id="clipboardActionPrompt">
+        <div id="clipboardActionPrompt" style="text-align: center;">
             <button class="btn btn-green" id="btnManualClipboard" style="width: 100%; padding: 12px;">
-                📋 Click to Read & Save Clipboard Link
+                📋 Click to Read &amp; Save Clipboard Link
             </button>
         </div>
 
@@ -245,9 +254,9 @@
                 <input type="password" id="tokenInput" placeholder="Enter Raindrop API Token" autocomplete="off" />
                 <button class="btn btn-secondary" id="btnToggleToken" title="Show/Hide">👁️</button>
                 <button class="btn btn-secondary" id="btnSaveToken">Save</button>
-                <button class="btn btn-secondary" id="btnClearToken" title="Reset to default">Reset</button>
+                <button class="btn btn-secondary" id="btnClearToken" title="Clear token">Clear</button>
             </div>
-            <div class="token-status" id="tokenStatusText">Using stored token</div>
+            <div class="token-status" id="tokenStatusText">Checking token...</div>
 
             <p class="tip" style="margin-top: 18px; text-align: center;">
                 <a href="https://app.raindrop.io" target="_blank" style="color: #58a6ff; text-decoration: none;">&rarr; Open Raindrop.io Web App</a>
@@ -256,7 +265,6 @@
     </div>
 
     <script>
-        const DEFAULT_TOKEN = 'bdf203da-f9c1-4e63-b75e-5cc1004b6444';
         const STORAGE_KEY = 'raindrop_token';
         const API_URL = 'https://api.raindrop.io/rest/v1/raindrop';
         const FALLBACK_URL = 'https://app.raindrop.io';
@@ -267,6 +275,12 @@
         const targetTitle = params.get('title');
         const isClipboardMode = params.get('clipboard') === '1';
 
+        // Auto-capture token from query params on first call if provided
+        const queryToken = params.get('token');
+        if (queryToken && queryToken.trim()) {
+            localStorage.setItem(STORAGE_KEY, queryToken.trim());
+        }
+
         // Elements
         const card = document.getElementById('statusCard');
         const spinner = document.getElementById('spinner');
@@ -275,6 +289,10 @@
         const dashboard = document.getElementById('dashboard');
         const clipboardPrompt = document.getElementById('clipboardActionPrompt');
         const btnManualClipboard = document.getElementById('btnManualClipboard');
+
+        const tokenPromptSection = document.getElementById('tokenPromptSection');
+        const firstTimeTokenInput = document.getElementById('firstTimeTokenInput');
+        const btnSubmitFirstTimeToken = document.getElementById('btnSubmitFirstTimeToken');
 
         const btnSaveClipboard = document.getElementById('btnSaveClipboard');
         const manualUrlInput = document.getElementById('manualUrlInput');
@@ -291,22 +309,22 @@
         const btnClearToken = document.getElementById('btnClearToken');
         const tokenStatusText = document.getElementById('tokenStatusText');
 
+        let pendingSave = null;
+
         // Token management via LocalStorage
         function getActiveToken() {
-            // Priority: URL query param -> localStorage -> default token
-            return params.get('token') || localStorage.getItem(STORAGE_KEY) || DEFAULT_TOKEN;
+            return localStorage.getItem(STORAGE_KEY) || (params.get('token') ? params.get('token').trim() : '');
         }
 
         function updateTokenDisplay() {
             const stored = localStorage.getItem(STORAGE_KEY);
-            const active = getActiveToken();
-            tokenInput.value = active;
+            tokenInput.value = stored || '';
             if (stored) {
-                tokenStatusText.innerText = '✓ Using token stored in your browser LocalStorage';
+                tokenStatusText.innerText = '✓ Token stored in your browser LocalStorage';
                 tokenStatusText.className = 'token-status saved';
             } else {
-                tokenStatusText.innerText = 'ℹ Using default token. Save your own to store it in LocalStorage.';
-                tokenStatusText.className = 'token-status';
+                tokenStatusText.innerText = '⚠️ No token configured yet. Enter your Raindrop API token above and click Save.';
+                tokenStatusText.className = 'token-status missing';
             }
         }
 
@@ -345,14 +363,27 @@
                 }
             }
 
+            const token = getActiveToken();
+            if (!token) {
+                // First API call without a stored token: capture it from the user
+                pendingSave = { url, title };
+                spinner.style.display = 'none';
+                dashboard.style.display = 'none';
+                clipboardPrompt.style.display = 'none';
+                titleText.innerText = 'Setup Required';
+                subText.innerText = 'Please provide your Raindrop API token to save bookmarks';
+                tokenPromptSection.style.display = 'block';
+                firstTimeTokenInput.focus();
+                return;
+            }
+
             dashboard.style.display = 'none';
             clipboardPrompt.style.display = 'none';
+            tokenPromptSection.style.display = 'none';
             spinner.style.display = 'block';
             card.className = 'card';
             titleText.innerText = 'Saving bookmark...';
             subText.innerText = url;
-
-            const token = getActiveToken();
 
             try {
                 const response = await fetch(API_URL, {
@@ -379,6 +410,10 @@
                     }, 1200);
                 } else {
                     const data = await response.json().catch(() => ({}));
+                    if (response.status === 401) {
+                        localStorage.removeItem(STORAGE_KEY);
+                        throw new Error('Unauthorized: Token invalid or expired. LocalStorage cleared.');
+                    }
                     throw new Error(data.errorMessage || ('API error (status ' + response.status + ')'));
                 }
             } catch (err) {
@@ -401,6 +436,19 @@
             }, 3000);
         }
 
+        function submitFirstTimeToken() {
+            const val = firstTimeTokenInput.value.trim();
+            if (!val) {
+                alert('Please enter a valid Raindrop token.');
+                return;
+            }
+            localStorage.setItem(STORAGE_KEY, val);
+            tokenPromptSection.style.display = 'none';
+            if (pendingSave) {
+                executeSave(pendingSave.url, pendingSave.title);
+            }
+        }
+
         // Clipboard read helper
         async function handleClipboardSave() {
             try {
@@ -414,7 +462,6 @@
                 }
                 executeSave(text, text);
             } catch (err) {
-                // If permission is denied or requires gesture
                 alert('Could not access clipboard: ' + err.message + '\nPlease paste the URL manually.');
                 manualUrlInput.focus();
             }
@@ -431,6 +478,11 @@
         }
 
         // Event listeners
+        btnSubmitFirstTimeToken.addEventListener('click', submitFirstTimeToken);
+        firstTimeTokenInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') submitFirstTimeToken();
+        });
+
         btnSaveClipboard.addEventListener('click', handleClipboardSave);
         btnManualClipboard.addEventListener('click', handleClipboardSave);
 
@@ -459,7 +511,7 @@
         });
 
         btnClearToken.addEventListener('click', () => {
-            if (confirm('Reset to default token?')) {
+            if (confirm('Clear saved token from LocalStorage?')) {
                 localStorage.removeItem(STORAGE_KEY);
                 updateTokenDisplay();
             }
@@ -485,7 +537,6 @@
                     btnManualClipboard.innerText = '📋 Click to Read & Save Clipboard';
                 }
             }).catch(() => {
-                // Browser requires explicit gesture on this tab
                 spinner.style.display = 'none';
                 clipboardPrompt.style.display = 'block';
                 subText.innerText = 'Permission needed to access clipboard in this tab';

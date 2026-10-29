@@ -29,11 +29,11 @@ javascript:(async function(){try{const c=(await navigator.clipboard.readText()||
 
 ## How to Set Up Your API Token in LocalStorage
 
-1. Visit your deployed site directly in your browser:
-   **[https://ibrezm1.github.io/raindrop-saver/](https://ibrezm1.github.io/raindrop-saver/)**
-2. Scroll to the **Raindrop API Token** section.
-3. Paste your Raindrop API token and click **Save**.
-4. The token is now stored securely in your browser's `localStorage` under this domain. Any bookmarklet you click in that browser will automatically read and use this token.
+You have 3 easy ways to set your token:
+
+- **Automatic capture on first save**: If no token has been saved yet, using either bookmarklet will display a clean prompt on the card asking for your token once, which is then captured and saved to `localStorage` before completing the save.
+- **Via URL parameter**: Passing `?token=YOUR_TOKEN` (e.g. `https://ibrezm1.github.io/raindrop-saver/?token=YOUR_TOKEN`) will automatically capture and store it in `localStorage`.
+- **Via Dashboard**: Visit [https://ibrezm1.github.io/raindrop-saver/](https://ibrezm1.github.io/raindrop-saver/), paste your token in the **Raindrop API Token** section, and click **Save**.
 
 ---
 
