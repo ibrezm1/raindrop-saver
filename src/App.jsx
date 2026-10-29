@@ -174,7 +174,7 @@ export function App() {
       <QuickSave onSaveUrl={handleQuickSaveUrl} />
 
       {/* 🔖 Bookmarklets */}
-      <BookmarkletSetup token={token} />
+      <BookmarkletSetup />
 
       {/* 🔑 API Token Settings */}
       <TokenSettings

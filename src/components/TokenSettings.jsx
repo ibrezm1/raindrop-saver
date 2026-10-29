@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Save, Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export function TokenSettings({ token, onSaveToken, onClearToken }) {
-  const [inputValue, setInputValue] = useState(token);
+  const [inputValue, setInputValue] = useState(token || '');
   const [showPassword, setShowPassword] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
+
+  useEffect(() => {
+    setInputValue(token || '');
+  }, [token]);
 
   const handleSave = (e) => {
     e.preventDefault();

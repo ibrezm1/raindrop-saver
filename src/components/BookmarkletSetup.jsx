@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
-import { Copy, Check, ChevronDown, ChevronRight, Bookmark } from 'lucide-react';
+import { Copy, Check, ChevronDown, ChevronRight } from 'lucide-react';
 
-export function BookmarkletSetup({ token }) {
+export function BookmarkletSetup() {
   const [copiedKey, setCopiedKey] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const baseUrl = window.location.origin + window.location.pathname;
 
-  // If token is provided, pass it in bookmarklet for first-time capture
-  const tokenParam = token ? `&token=${token}` : '';
+  // Clean bookmarklets with NO credentials hardcoded - token is read directly from localStorage
+  const pageBookmarklet = `javascript:(function(){const u=encodeURIComponent(location.href);const t=encodeURIComponent(document.title);window.open('${baseUrl}?url='+u+'&title='+t,'_blank');})();`;
 
-  const pageBookmarklet = `javascript:(function(){const u=encodeURIComponent(location.href);const t=encodeURIComponent(document.title);const token='${token || ''}';window.open('${baseUrl}?url='+u+'&title='+t+'&token='+token,'_blank');})();`;
-
-  const clipBookmarklet = `javascript:(async function(){try{const c=(await navigator.clipboard.readText()||'').trim();const token='${token || ''}';if(/^https?:\\/\\//i.test(c)){window.open('${baseUrl}?url='+encodeURIComponent(c)+'&title='+encodeURIComponent(c)+'&token='+token,'_blank');}else{window.open('${baseUrl}?clipboard=1&token='+token,'_blank');}}catch(e){window.open('${baseUrl}?clipboard=1&token=${token || ''}','_blank');}})();`;
+  const clipBookmarklet = `javascript:(async function(){try{const c=(await navigator.clipboard.readText()||'').trim();if(/^https?:\\/\\//i.test(c)){window.open('${baseUrl}?url='+encodeURIComponent(c)+'&title='+encodeURIComponent(c),'_blank');}else{window.open('${baseUrl}?clipboard=1','_blank');}}catch(e){window.open('${baseUrl}?clipboard=1','_blank');}})();`;
 
   const copyToClipboard = (text, key) => {
     navigator.clipboard.writeText(text);
@@ -34,7 +32,7 @@ export function BookmarkletSetup({ token }) {
       {!isCollapsed ? (
         <div>
           <p className="tip" style={{ marginBottom: 12 }}>
-            Drag the green buttons directly onto your browser's bookmarks bar:
+            Drag the green buttons directly onto your browser's bookmarks bar. The bookmarklets contain no credentials — they automatically read your token from LocalStorage when opened:
           </p>
 
           <div style={styles.item}>
