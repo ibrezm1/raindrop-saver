@@ -1,51 +1,45 @@
 # Raindrop Saver Bookmarklet
 
-A fast, lightweight static web page hosted on GitHub Pages designed to bypass browser Content Security Policy (CSP) and CORS restrictions when saving links to [Raindrop.io](https://raindrop.io) via a bookmarklet.
+A fast, lightweight static web app hosted on GitHub Pages designed to bypass browser Content Security Policy (CSP) and CORS restrictions when saving links to [Raindrop.io](https://raindrop.io) via browser bookmarklets.
 
-## How It Works
+## Features
 
-1. **The Bookmarklet:** When clicked on any website, it grabs the current page's URL and title, then opens your GitHub Pages app in a new tab:
-   `https://ibrezm1.github.io/raindrop-saver/?url=...&title=...`
-2. **The GitHub Pages App (`index.html`):**
-   - Extracts the URL and title parameters.
-   - Sends a `POST` request to the Raindrop API (`https://api.raindrop.io/rest/v1/raindrop`) using your Bearer token.
-   - Avoids third-party CSP blocks since the request originates from your own GitHub Pages domain.
-   - Displays a success state and automatically closes the tab after saving.
+- **Save Current Page**: Saves the URL and title of the active tab.
+- **Save from Clipboard**: 1-click save for whatever web link is currently copied to your clipboard (from Slack, Discord, PDF, etc.).
+- **LocalStorage Token Management**: Store and update your Raindrop API token directly in your browser's `localStorage` so you never have to hardcode or re-enter it.
+- **Auto-Close**: Confirms the save with a clean status message and automatically closes the temporary tab.
 
 ---
 
-## Bookmarklet Setup
+## Bookmarklets
 
-Create a new browser bookmark with the following URL (or visit your deployed GitHub Pages site directly and drag the button to your bookmarks bar):
+### 1. Save Current Page Bookmarklet
 
 ```javascript
 javascript:(function(){const u=encodeURIComponent(location.href);const t=encodeURIComponent(document.title);window.open('https://ibrezm1.github.io/raindrop-saver/?url='+u+'&title='+t,'_blank');})();
 ```
 
-### Steps to add in your browser:
-1. Open your browser's Bookmarks Manager (or press `Cmd+D` / `Ctrl+D` to bookmark any page).
-2. Edit the newly created bookmark.
-3. Set the Name to: `Save to Raindrop` (or any name you prefer).
-4. Set the URL to the `javascript:...` snippet above.
-5. Save it to your Bookmarks Bar.
+### 2. Save Clipboard Link Bookmarklet
+
+```javascript
+javascript:(async function(){try{const c=(await navigator.clipboard.readText()||'').trim();if(/^https?:\/\//i.test(c)){window.open('https://ibrezm1.github.io/raindrop-saver/?url='+encodeURIComponent(c)+'&title='+encodeURIComponent(c),'_blank');}else{window.open('https://ibrezm1.github.io/raindrop-saver/?clipboard=1','_blank');}}catch(e){window.open('https://ibrezm1.github.io/raindrop-saver/?clipboard=1','_blank');}})();
+```
+
+---
+
+## How to Set Up Your API Token in LocalStorage
+
+1. Visit your deployed site directly in your browser:
+   **[https://ibrezm1.github.io/raindrop-saver/](https://ibrezm1.github.io/raindrop-saver/)**
+2. Scroll to the **Raindrop API Token** section.
+3. Paste your Raindrop API token and click **Save**.
+4. The token is now stored securely in your browser's `localStorage` under this domain. Any bookmarklet you click in that browser will automatically read and use this token.
 
 ---
 
 ## Enabling GitHub Pages
 
-To make the saver active at `https://ibrezm1.github.io/raindrop-saver/`:
-
-1. Go to your repository on GitHub: [ibrezm1/raindrop-saver](https://github.com/ibrezm1/raindrop-saver).
-2. Click **Settings** &gt; **Pages** (in the left sidebar).
-3. Under **Build and deployment**:
-   - Source: **Deploy from a branch**
-   - Branch: **`main`** / Folder: **`/ (root)`**
-4. Click **Save**.
-5. After 1-2 minutes, GitHub Pages will deploy your site at `https://ibrezm1.github.io/raindrop-saver/`.
-
----
-
-## Security Note
-
-- Keep this repository private if you do not want your personal Raindrop API token exposed publicly.
-- If you keep the repository public, you can also pass `&token=YOUR_TOKEN` in the bookmarklet query parameters or use browser `localStorage` rather than relying on a hardcoded token in the source code.
+1. Go to your repository settings: [github.com/ibrezm1/raindrop-saver/settings/pages](https://github.com/ibrezm1/raindrop-saver/settings/pages).
+2. Under **Build and deployment** > **Source**, choose **Deploy from a branch**.
+3. Select Branch: **`main`** and Folder: **`/ (root)`**, then click **Save**.
+4. After 1–2 minutes, GitHub Pages will deploy the updated app.
