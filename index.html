@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saving to Raindrop...</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            padding: 24px 32px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+        }
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #30363d;
+            border-top: 3px solid #2ea043;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        h2 { font-size: 18px; margin: 0 0 8px 0; color: #f0f6fc; }
+        p { font-size: 14px; margin: 0; color: #8b949e; word-break: break-all; }
+        .success { border-color: #2ea043; }
+        .success .spinner { border-top-color: #2ea043; display: none; }
+        .success h2 { color: #2ea043; }
+        .error { border-color: #f85149; }
+        .error .spinner { display: none; }
+        .error h2 { color: #f85149; }
+
+        /* Setup view styles */
+        .setup-section {
+            display: none;
+            text-align: left;
+            margin-top: 16px;
+        }
+        .btn-bookmarklet {
+            display: inline-block;
+            background: #238636;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: move;
+            margin: 14px 0;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            user-select: none;
+        }
+        .btn-bookmarklet:hover {
+            background: #2ea043;
+        }
+        .code-box {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            user-select: all;
+            margin-top: 8px;
+            color: #79c0ff;
+        }
+        .tip {
+            font-size: 12px;
+            color: #8b949e;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="statusCard">
+        <div class="spinner" id="spinner"></div>
+        <h2 id="titleText">Saving bookmark...</h2>
+        <p id="subText">Connecting to Raindrop.io</p>
+
+        <!-- Shown only when visited directly without ?url= -->
+        <div class="setup-section" id="setupSection">
+            <p style="color: #c9d1d9; font-size: 14px; margin-bottom: 8px;">
+                Drag this button to your browser bookmarks bar:
+            </p>
+            <div style="text-align: center;">
+                <a href="#" class="btn-bookmarklet" id="bookmarkletLink">Save to Raindrop</a>
+            </div>
+            <p class="tip">
+                Or copy the bookmarklet code below into a new bookmark's URL field:
+            </p>
+            <div class="code-box" id="bookmarkletCode"></div>
+            <p class="tip" style="margin-top: 14px;">
+                <a href="https://app.raindrop.io" target="_blank" style="color: #58a6ff; text-decoration: none;">&rarr; Open Raindrop Web App</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_TOKEN = 'bdf203da-f9c1-4e63-b75e-5cc1004b6444';
+        const API_URL = 'https://api.raindrop.io/rest/v1/raindrop';
+        const FALLBACK_URL = 'https://app.raindrop.io';
+
+        const params = new URLSearchParams(window.location.search);
+        const targetUrl = params.get('url');
+        const targetTitle = params.get('title') || document.title;
+        const token = params.get('token') || DEFAULT_TOKEN;
+
+        const card = document.getElementById('statusCard');
+        const spinner = document.getElementById('spinner');
+        const titleText = document.getElementById('titleText');
+        const subText = document.getElementById('subText');
+        const setupSection = document.getElementById('setupSection');
+        const bookmarkletLink = document.getElementById('bookmarkletLink');
+        const bookmarkletCode = document.getElementById('bookmarkletCode');
+
+        function generateBookmarkletCode() {
+            // Build absolute URL of this page without query params
+            const pageUrl = window.location.origin + window.location.pathname;
+            return `javascript:(function(){const u=encodeURIComponent(location.href);const t=encodeURIComponent(document.title);window.open('${pageUrl}?url='+u+'&title='+t,'_blank');})();`;
+        }
+
+        async function saveBookmark() {
+            if (!targetUrl) {
+                // Setup / Instruction mode
+                spinner.style.display = 'none';
+                titleText.innerText = 'Raindrop Saver Bookmarklet';
+                subText.innerText = 'Bookmarklet installation and setup';
+                setupSection.style.display = 'block';
+
+                const bmCode = generateBookmarkletCode();
+                bookmarkletLink.setAttribute('href', bmCode);
+                bookmarkletCode.innerText = bmCode;
+                return;
+            }
+
+            subText.innerText = targetUrl;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        link: targetUrl,
+                        title: targetTitle,
+                        pleaseParse: {}
+                    })
+                });
+
+                if (response.ok) {
+                    card.classList.add('success');
+                    titleText.innerText = '✓ Saved to Raindrop!';
+                    subText.innerText = 'Closing tab automatically...';
+                    setTimeout(() => {
+                        window.close();
+                        // Fallback if browser blocks window.close()
+                        setTimeout(() => { window.location.href = FALLBACK_URL; }, 500);
+                    }, 1200);
+                } else {
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data.errorMessage || ('API returned status ' + response.status));
+                }
+            } catch (err) {
+                console.error(err);
+                card.classList.add('error');
+                titleText.innerText = 'Save failed';
+                subText.innerText = (err.message || 'Error communicating with Raindrop') + '. Opening Raindrop...';
+                setTimeout(() => {
+                    window.location.href = FALLBACK_URL;
+                }, 2500);
+            }
+        }
+
+        saveBookmark();
+    </script>
+</body>
+</html>
