@@ -1,0 +1,32 @@
+{
+  "name": "save-raindrop",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A fast, lightweight static web app hosted on GitHub Pages designed to: 1. **Bypass browser CSP & CORS restrictions** when saving links to [Raindrop.io](https://raindrop.io) via bookmarklets. 2. **Search & Browse your bookmarks** with a live search bar, quick filter chips, and newly added links list. 3. Provide a **command-line Bash script** (`search.sh`) to search your Raindrop bookmarks right from the terminal.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ibrezm1/raindrop-saver.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ibrezm1/raindrop-saver/issues"
+  },
+  "homepage": "https://github.com/ibrezm1/raindrop-saver#readme",
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "vite": "^8.3.5"
+  },
+  "dependencies": {
+    "lucide-react": "^1.64.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  }
+}
