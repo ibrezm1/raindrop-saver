@@ -35,8 +35,9 @@ export function SearchSection({ activeQuery, onSearch }) {
           onChange={(e) => setInputValue(e.target.value)}
           placeholder='Search (e.g. "link:github -#archive", "react", tags...)'
         />
-        <button type="submit" className="btn btn-primary">
-          <Search size={14} /> Search
+        <button type="submit" className="btn btn-primary" title="Search">
+          <Search size={14} />
+          <span className="search-btn-label">Search</span>
         </button>
         {inputValue ? (
           <button
@@ -76,22 +77,29 @@ const styles = {
   chipsContainer: {
     display: 'flex',
     gap: '6px',
-    flexWrap: 'wrap',
+    overflowX: 'auto',
+    paddingBottom: '6px',
     marginBottom: '14px',
+    WebkitOverflowScrolling: 'touch',
+    scrollbarWidth: 'none',
   },
   chip: {
     background: 'var(--bg-tertiary)',
     border: '1px solid var(--border-default)',
     color: 'var(--text-muted)',
-    padding: '4px 10px',
-    borderRadius: '14px',
-    fontSize: '11px',
+    padding: '6px 12px',
+    borderRadius: '16px',
+    fontSize: '12px',
     cursor: 'pointer',
     transition: 'all 0.15s',
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
+    minHeight: '30px',
   },
   chipActive: {
-    background: 'rgba(31, 111, 235, 0.15)',
+    background: 'rgba(31, 111, 235, 0.2)',
     borderColor: 'var(--accent-blue-text)',
     color: 'var(--accent-blue-text)',
+    fontWeight: '600',
   },
 };

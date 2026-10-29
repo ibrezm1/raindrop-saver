@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, ChevronDown, ChevronRight } from 'lucide-react';
+import { Copy, Check, ChevronDown, ChevronRight, Smartphone } from 'lucide-react';
 
 export function BookmarkletSetup() {
   const [copiedKey, setCopiedKey] = useState(null);
@@ -7,7 +7,6 @@ export function BookmarkletSetup() {
 
   const baseUrl = window.location.origin + window.location.pathname;
 
-  // Clean bookmarklets with NO credentials hardcoded - token is read directly from localStorage
   const pageBookmarklet = `javascript:(function(){const u=encodeURIComponent(location.href);const t=encodeURIComponent(document.title);window.open('${baseUrl}?url='+u+'&title='+t,'_blank');})();`;
 
   const clipBookmarklet = `javascript:(async function(){try{const c=(await navigator.clipboard.readText()||'').trim();if(/^https?:\\/\\//i.test(c)){window.open('${baseUrl}?url='+encodeURIComponent(c)+'&title='+encodeURIComponent(c),'_blank');}else{window.open('${baseUrl}?clipboard=1','_blank');}}catch(e){window.open('${baseUrl}?clipboard=1','_blank');}})();`;
@@ -32,21 +31,21 @@ export function BookmarkletSetup() {
       {!isCollapsed ? (
         <div>
           <p className="tip" style={{ marginBottom: 12 }}>
-            Drag the green buttons directly onto your browser's bookmarks bar. The bookmarklets contain no credentials — they automatically read your token from LocalStorage when opened:
+            <strong>Desktop:</strong> Drag the green button to your bookmarks bar.<br />
+            <strong>Mobile:</strong> Tap <strong>Copy</strong>, bookmark any page in Safari/Chrome, and paste this as the URL.
           </p>
 
           <div style={styles.item}>
-            <div style={styles.header}>
+            <div className="bookmarklet-header-mobile" style={styles.header}>
               <strong>1. Save Current Page</strong>
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div className="actions-row">
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  style={{ padding: '6px 10px', fontSize: 11 }}
                   onClick={() => copyToClipboard(pageBookmarklet, 'page')}
                 >
-                  {copiedKey === 'page' ? <Check size={12} color="#3fb950" /> : <Copy size={12} />}
-                  {copiedKey === 'page' ? 'Copied' : 'Copy'}
+                  {copiedKey === 'page' ? <Check size={14} color="#3fb950" /> : <Copy size={14} />}
+                  {copiedKey === 'page' ? 'Copied!' : 'Copy Code'}
                 </button>
                 <a href={pageBookmarklet} className="btn btn-green" style={{ cursor: 'move' }}>
                   Save to Raindrop
@@ -57,24 +56,23 @@ export function BookmarkletSetup() {
           </div>
 
           <div style={styles.item}>
-            <div style={styles.header}>
+            <div className="bookmarklet-header-mobile" style={styles.header}>
               <strong>2. Save from Clipboard</strong>
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div className="actions-row">
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  style={{ padding: '6px 10px', fontSize: 11 }}
                   onClick={() => copyToClipboard(clipBookmarklet, 'clip')}
                 >
-                  {copiedKey === 'clip' ? <Check size={12} color="#3fb950" /> : <Copy size={12} />}
-                  {copiedKey === 'clip' ? 'Copied' : 'Copy'}
+                  {copiedKey === 'clip' ? <Check size={14} color="#3fb950" /> : <Copy size={14} />}
+                  {copiedKey === 'clip' ? 'Copied!' : 'Copy Code'}
                 </button>
                 <a href={clipBookmarklet} className="btn btn-green" style={{ cursor: 'move' }}>
                   Save Clipboard Link
                 </a>
               </div>
             </div>
-            <p className="tip">Saves whatever URL is currently in your clipboard.</p>
+            <p className="tip">Saves whatever link is currently in your clipboard.</p>
             <div className="code-box">{clipBookmarklet}</div>
           </div>
         </div>
@@ -88,7 +86,7 @@ const styles = {
     background: 'var(--bg-primary)',
     border: '1px solid var(--border-muted)',
     borderRadius: '8px',
-    padding: '14px',
+    padding: '12px 14px',
     marginBottom: '12px',
   },
   header: {

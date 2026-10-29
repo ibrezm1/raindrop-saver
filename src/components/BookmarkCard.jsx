@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ExternalLink, Tag } from 'lucide-react';
 import { formatRelativeTime } from '../services/raindropApi';
 
 export function BookmarkCard({ item }) {
@@ -9,16 +8,17 @@ export function BookmarkCard({ item }) {
   const domainStr = item.domain || '';
 
   return (
-    <div style={styles.card}>
+    <div className="bookmark-card">
       {item.cover && !imgError ? (
         <img
           src={item.cover}
           alt=""
-          style={styles.thumb}
+          className="bookmark-thumb"
           onError={() => setImgError(true)}
+          loading="lazy"
         />
       ) : (
-        <div style={styles.fallbackThumb}>🔗</div>
+        <div className="bookmark-fallback-thumb">🔗</div>
       )}
 
       <div style={styles.content}>
@@ -63,36 +63,6 @@ export function BookmarkCard({ item }) {
 }
 
 const styles = {
-  card: {
-    background: 'var(--bg-primary)',
-    border: '1px solid var(--border-default)',
-    borderRadius: '8px',
-    padding: '12px 14px',
-    display: 'flex',
-    gap: '14px',
-    alignItems: 'flex-start',
-    transition: 'border-color 0.15s, background-color 0.15s',
-  },
-  thumb: {
-    width: '54px',
-    height: '54px',
-    borderRadius: '6px',
-    backgroundColor: 'var(--bg-tertiary)',
-    objectFit: 'cover',
-    flexShrink: 0,
-  },
-  fallbackThumb: {
-    width: '54px',
-    height: '54px',
-    borderRadius: '6px',
-    backgroundColor: 'var(--bg-tertiary)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '20px',
-    color: 'var(--text-muted)',
-    flexShrink: 0,
-  },
   content: {
     flex: 1,
     minWidth: 0,
@@ -106,6 +76,7 @@ const styles = {
     marginBottom: '4px',
     lineHeight: 1.35,
     wordBreak: 'break-word',
+    overflowWrap: 'anywhere',
   },
   excerpt: {
     fontSize: '12px',
@@ -117,11 +88,12 @@ const styles = {
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
     wordBreak: 'break-word',
+    overflowWrap: 'anywhere',
   },
   meta: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '6px',
     fontSize: '11px',
     color: '#7d8590',
     flexWrap: 'wrap',
@@ -145,5 +117,6 @@ const styles = {
     color: 'var(--text-muted)',
     textDecoration: 'none',
     fontSize: '11px',
+    whiteSpace: 'nowrap',
   },
 };
