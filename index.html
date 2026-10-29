@@ -279,6 +279,11 @@
         const queryToken = params.get('token');
         if (queryToken && queryToken.trim()) {
             localStorage.setItem(STORAGE_KEY, queryToken.trim());
+            try {
+                const cleanUrl = new URL(window.location.href);
+                cleanUrl.searchParams.delete('token');
+                window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search);
+            } catch (e) {}
         }
 
         // Elements
